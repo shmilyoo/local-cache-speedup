@@ -1,4 +1,5 @@
 # implement a local high speed cache accelerator system with celery and scapy
+  If the bandwidth for accessing the remote service is narrow, it is slow when opening online video or downloading files. This situation is even more serious when multiple users locally access the remote service at the same time. To solve this problem, this project is used to actively cache resources from the remote site to the local server when the user first accesses (or determines according to heat). The system hijacks and redirects subsequent user access requests so that it can obtain high-speed resources locally.
 
 ## celery flow chart
 ![流程图](https://ws1.sinaimg.cn/large/566418e8gy1fpukerjeyzj20qf0gz409.jpg)
