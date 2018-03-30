@@ -1,8 +1,7 @@
-# 使用celery实现本地高速缓存加速器
+# implement a local high speed cache accelerator system with celery and scapy
 
-## celery 流程图
-[流程图](https://www.processon.com/diagraming/5aae621ae4b0262b8b40f90a
-)
+## celery flow chart
+![流程图](https://ws1.sinaimg.cn/large/566418e8gy1fpukerjeyzj20qf0gz409.jpg)
 
 ## how to manage your workers
 ### workers 
