@@ -8,7 +8,7 @@ from os import path
 
 from celery_app.helper import db_execute
 from celery_app.pyaria2 import PyAria2
-from celery_app.config import download_base, R_ARGS_PASS, R_DOWNLOADING, redirect_url_base
+from celery_app.config import download_base, R_ARGS_PASS, redirect_url_base,R_PROCESSING
 
 
 @app.task(ignore_result=True)
@@ -17,10 +17,10 @@ def download(key):
     _pkt_info = r.hget(R_ARGS_PASS, key)
     pkt_info = json.loads(_pkt_info)
     r.hdel(R_ARGS_PASS, key)
-    if r.sismember(R_DOWNLOADING, key):
-        print('key {} url {} in redis is already downloading'.format(key, pkt_info['url']))
-        return
-    r.sadd(R_DOWNLOADING, key)
+    # if r.sismember(R_PROCESSING, key):
+    #     print('key {} url {} in redis is already processing'.format(key, pkt_info['url']))
+    #     return
+    # r.sadd(R_DOWNLOADING, key)
     # start downloading, send rpc message to aria2 server
     try:
         job = PyAria2()
@@ -55,7 +55,7 @@ def download(key):
     except Exception as e:
         print('Exception happend in downloading {},download process now end,exception is {}'.format(url, e))
     finally:
-        r.srem(R_DOWNLOADING, key)
+        r.srem(R_PROCESSING, key)
 
 
 def save_to_db(key, url):

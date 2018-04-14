@@ -1,6 +1,7 @@
 # coding:utf-8
 import json
 import redis
+
 # from scapy.layers.inet import TCP, IP
 try:
     from scapy.layers import http
@@ -8,9 +9,7 @@ except ImportError:
     from scapy_http import http
 from celery_app import app
 from scapy.all import *
-# although the module did not be directly invoked here, you should keep this to parse the http payload
-# from scapy_http.http import HTTP
-from celery_app.config import cap_ext, R_ANALYZING, R_DOWNLOADING, R_ARGS_PASS
+from celery_app.config import cap_ext, R_ARGS_PASS, R_PROCESSING
 import os
 from celery_app.helper import get_hash
 
@@ -34,18 +33,22 @@ def prn_callback(r):
         if any([url.endswith(ext) for ext in cap_ext]):
             print('\n{0[src]} - {1[Method]} - http://{1[Host]}{1[Path]}'.format(ip_layer.fields, http_layer.fields))
             key = get_hash(url)
-            if r.sismember(R_ANALYZING, key):
-                print('key {}(url {}) is now analyzing,skip sending it from pcap to analyze'.format(key, url))
+            if r.sismember(R_PROCESSING, key):
+                print('key {}(url {}) is now processing,skip sending it from pcap to analyze'.format(key, url))
                 return
-            if r.sismember(R_DOWNLOADING, key):
-                print('key {}(url {}) is now downloading,skip sending it from pcap to analyze'.format(key, url))
-                return
+            # if r.sismember(R_ANALYZING, key):
+            #     print('key {}(url {}) is now analyzing,skip sending it from pcap to analyze'.format(key, url))
+            #     return
+            # if r.sismember(R_DOWNLOADING, key):
+            #     print('key {}(url {}) is now downloading,skip sending it from pcap to analyze'.format(key, url))
+            #     return
             pkt_info = get_pkt_info(packet)
             pkt_info.update({'key': key, 'url': url})
             r.hset(R_ARGS_PASS, key, json.dumps(pkt_info))
             # print(pkt_info)
             print('send key {}(url {}) to analyze process'.format(key, url))
             app.send_task('celery_app.analyze_url_task.analyze_url', (key,))
+            r.sadd(R_PROCESSING, key)
 
     return parse_packet
 
@@ -75,5 +78,5 @@ def packet_cap(dport, dhost, dev):
     """
     print('start capture at process {0}'.format(os.getpid()))
     r = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
-    _filter = "tcp and port {0} and host {1}".format(dport, dhost)  # not host , dst?
+    _filter = "dst {0} and tcp and dst port {1}".format(dhost, dport)  # not host , dst?
     sniff(iface=dev, filter=_filter, prn=prn_callback(r))

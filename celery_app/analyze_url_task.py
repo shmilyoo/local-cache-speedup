@@ -6,7 +6,7 @@ import redis
 import json
 from celery_app.helper import db_get_one, get_timestamp_utcnow, db_execute
 from scapy.all import *
-from celery_app.config import R_DOWNLOADING, R_ANALYZING, R_ARGS_PASS, cache_threshold, redirect_src
+from celery_app.config import R_DOWNLOADING, R_ANALYZING, R_ARGS_PASS, cache_threshold, redirect_src, R_PROCESSING
 
 
 @app.task(ignore_result=True)
@@ -14,11 +14,14 @@ def analyze_url(key):
     r = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
     _pkt_info = r.hget(R_ARGS_PASS, key)
     r.hdel(R_ARGS_PASS, key)
-    if r.sismember(R_ANALYZING, key) or r.sismember(R_DOWNLOADING, key):
-        print('key {} in redis is already in analyze/download process'.format(key))
-        return
+    # if r.sismember(R_ANALYZING, key) or r.sismember(R_DOWNLOADING, key):
+    #     print('key {} in redis is already in analyze/download process'.format(key))
+    #     return
+    # if r.sismember(R_PROCESSING, key):
+    #     print('key {} in redis is already in processing,skip analyze'.format(key))
+    #     return
     pkt_info = json.loads(_pkt_info)
-    r.sadd(R_ANALYZING, key)
+    # r.sadd(R_ANALYZING, key)
     try:
         print('analyze process get job,url is ' + pkt_info['url'])
         # use the hash key of url as the primary index key in db
@@ -45,7 +48,7 @@ def analyze_url(key):
                           'Send the task to download process'.format(pkt_info['url']))
                     r.hset(R_ARGS_PASS, key, _pkt_info)
                     app.send_task('celery_app.download_task.download', (key,))
-                    r.srem(R_ANALYZING, key)
+                    # r.srem(R_ANALYZING, key)
                 else:
                     # the record is exist,but file did not downloaded because the cache_threshold has not been reached.
                     # hits_number + 1 only
@@ -69,9 +72,10 @@ def analyze_url(key):
                 r.hset(R_ARGS_PASS, key, _pkt_info)
                 app.send_task('celery_app.download_task.download', (key,))
     except Exception as e:
+        r.srem(R_PROCESSING, key)
         print('Exception happend in analyzing {},analyze process now end,exception is {}'.format(pkt_info['url'], e))
-    finally:
-        r.srem(R_ANALYZING, key)
+    # finally:
+    #     r.srem(R_PROCESSING, key)
 
 
 def update_lasthit_hitnumber(key):
