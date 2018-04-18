@@ -52,7 +52,7 @@ def download(key):
                 pass
             time.sleep(1)
     except Exception as e:
-        print('Exception happend in downloading {},download process now end,exception is {}'.format(url, e))
+        print('error happend in downloading {},download process now end,exception is {}'.format(url, e))
     finally:
         r.srem(R_PROCESSING, key)
 

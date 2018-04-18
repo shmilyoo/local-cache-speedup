@@ -54,6 +54,8 @@ class PyAria2(object):
         if not isAria2rpcRunning():
             cmd = 'aria2c' \
                   ' --enable-rpc' \
+                  ' --rpc-listen-all=true' \
+                  ' --rpc-allow-origin-all' \
                   ' --rpc-listen-port %d' \
                   ' --continue' \
                   ' --max-concurrent-downloads=20' \

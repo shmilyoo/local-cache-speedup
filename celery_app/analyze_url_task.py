@@ -67,7 +67,7 @@ def analyze_url(key):
             if db_execute(sql):
                 print('insert new url row, key {}(url {})'.format(key, pkt_info['url']))
             else:
-                print('insert new url row failed, key {}(url {})'.format(key, pkt_info['url']))
+                print('error happened in insert new url row, key {}(url {})'.format(key, pkt_info['url']))
             if cache_threshold == 0:
                 # meet the cache_threshold although the cache does not exist. send to download process
                 print('send key {}(url {}) to download process'.format(key, pkt_info['url']))
@@ -75,7 +75,7 @@ def analyze_url(key):
                 app.send_task('celery_app.download_task.download', (key,))
     except Exception as e:
         r.srem(R_PROCESSING, key)
-        print('Exception happend in analyzing {},analyze process now end,exception is {}'.format(pkt_info['url'], e))
+        print('error happend in analyzing {},analyze process now end,exception is {}'.format(pkt_info['url'], e))
     # finally:
     #     r.srem(R_PROCESSING, key)
 
