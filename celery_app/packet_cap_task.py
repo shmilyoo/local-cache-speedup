@@ -1,8 +1,6 @@
 # coding:utf-8
 import json
 import redis
-
-# from scapy.layers.inet import TCP, IP
 try:
     from scapy.layers import http
 except ImportError:
@@ -12,9 +10,6 @@ from scapy.all import *
 from celery_app.config import cap_ext, R_ARGS_PASS, R_PROCESSING
 import os
 from celery_app.helper import get_hash
-
-
-# from urllib.parse import urlparse
 
 
 def prn_callback(r):
@@ -29,7 +24,6 @@ def prn_callback(r):
         # path = http_layer.fields['Path'].decode('utf-8')
         # url = urlparse(path).path.replace('//', '/')
         url = http_layer.fields['Path'].decode('utf-8').replace('//', '/')
-        print(url)
         if any([url.endswith(ext) for ext in cap_ext]):
             print('\n{0[src]} - {1[Method]} - http://{1[Host]}{1[Path]}'.format(ip_layer.fields, http_layer.fields))
             key = get_hash(url)
@@ -45,7 +39,6 @@ def prn_callback(r):
             pkt_info = get_pkt_info(packet)
             pkt_info.update({'key': key, 'url': url})
             r.hset(R_ARGS_PASS, key, json.dumps(pkt_info))
-            # print(pkt_info)
             print('send key {}(url {}) to analyze process'.format(key, url))
             app.send_task('celery_app.analyze_url_task.analyze_url', (key,))
             r.sadd(R_PROCESSING, key)
@@ -79,4 +72,4 @@ def packet_cap(dport, dhost, dev):
     print('start capture at process {0}'.format(os.getpid()))
     r = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
     _filter = "dst {0} and tcp and dst port {1}".format(dhost, dport)  # not host , dst?
-    sniff(iface=dev, filter=_filter, prn=prn_callback(r))
+    sniff(iface=dev, filter=_filter, prn=prn_callback(r), store=False)

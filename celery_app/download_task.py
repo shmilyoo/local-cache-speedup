@@ -30,7 +30,6 @@ def download(key):
         sub_dir = '/'.join(url.split('/')[:-1]).lstrip('/')
         download_dir = path.join(download_base, sub_dir)
         options = {'dir': download_dir}
-        print(full_url, options)
         id = job.addUri([full_url], options=options)
         print('start downloading {} to {},aria2 job id is {}'.format(full_url, download_dir, id))
         while True:
