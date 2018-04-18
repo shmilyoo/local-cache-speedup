@@ -35,6 +35,7 @@ def analyze_url(key):
                 print('the file in url {} is available for cache, '
                       'send http 302 to src host {}'.format(pkt_info['url'], pkt_info['ip_src']))
                 send_http_302(redirect, pkt_info)
+                r.srem(R_PROCESSING, key)
                 # if update_lasthit_hitnumber(key):
                 #     print(
                 #         'update hits_number and last_hit after send http 302 for url {}'.format(pkt_info['url']))
@@ -48,6 +49,8 @@ def analyze_url(key):
                     r.hset(R_ARGS_PASS, key, _pkt_info)
                     app.send_task('celery_app.download_task.download', (key,))
                     # r.srem(R_ANALYZING, key)
+                else:
+                    r.srem(R_PROCESSING, key)
                 # else:
                 # the record is exist,but file did not downloaded because the cache_threshold has not been reached.
                 # hits_number + 1 only
@@ -73,9 +76,11 @@ def analyze_url(key):
                 print('send key {}(url {}) to download process'.format(key, pkt_info['url']))
                 r.hset(R_ARGS_PASS, key, _pkt_info)
                 app.send_task('celery_app.download_task.download', (key,))
-    except Exception as e:
+            else:
+                r.srem(R_PROCESSING, key)
+    except Exception as er:
         r.srem(R_PROCESSING, key)
-        print('error happend in analyzing {},analyze process now end,exception is {}'.format(pkt_info['url'], e))
+        print('error happend in analyzing {},analyze process now end,exception is {}'.format(pkt_info['url'], er))
     # finally:
     #     r.srem(R_PROCESSING, key)
 
