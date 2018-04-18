@@ -8,7 +8,7 @@ from celery.schedules import crontab
 
 R_ANALYZING = 'ANALYZING'  # list
 R_DOWNLOADING = 'DOWNLOADING'  # list
-R_PROCESSING = 'DOWNLOADING'  # list
+R_PROCESSING = 'PROCESSING'  # list
 R_ARGS_PASS = 'ARGS_PASS'  # hash
 
 cap_dst = '192.241.211.12'  # 抓包需要捕获的目的地址
