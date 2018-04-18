@@ -107,4 +107,8 @@ maybe you should execute this additional
 set the download base dir (absolute) in config.py  
 install aria2  
 the download process will auto start aria2c to download the url  
+but I strongly suggest to open a aria2c process or service by your self. Because use the aria2c command in pyaria2.py, the download process will be terminated in several minutes. And I still do not know why.  
+```
+aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all --rpc-listen-port 6800 --continue --max-concurrent-downloads=20 --max-connection-per-server=10 --rpc-max-request-size=1024M --auto-file-renaming=false
+```
 You can use [yaaw](https://github.com/binux/yaaw) to monitor the aria2 download status.
