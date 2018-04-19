@@ -4,3 +4,4 @@ celerybeat-schedule
 *.py[cod]
 __pycache__/
 .idea/
+clear.py

@@ -21,8 +21,6 @@ def prn_callback(r):
             return
         ip_layer = packet.getlayer(IP)
         # path like 'http://1.1.1.1/a//b/c/d.mp4 or /a/b/c/d.mp4 or /a//b/c.mp4'
-        # path = http_layer.fields['Path'].decode('utf-8')
-        # url = urlparse(path).path.replace('//', '/')
         url = http_layer.fields['Path'].decode('utf-8').replace('//', '/')
         if any([url.endswith(ext) for ext in cap_ext]):
             print('\n{0[src]} - {1[Method]} - http://{1[Host]}{1[Path]}'.format(ip_layer.fields, http_layer.fields))
@@ -30,12 +28,6 @@ def prn_callback(r):
             if r.sismember(R_PROCESSING, key):
                 print('key {}(url {}) is now processing,skip sending it from pcap to analyze'.format(key, url))
                 return
-            # if r.sismember(R_ANALYZING, key):
-            #     print('key {}(url {}) is now analyzing,skip sending it from pcap to analyze'.format(key, url))
-            #     return
-            # if r.sismember(R_DOWNLOADING, key):
-            #     print('key {}(url {}) is now downloading,skip sending it from pcap to analyze'.format(key, url))
-            #     return
             pkt_info = get_pkt_info(packet)
             pkt_info.update({'key': key, 'url': url})
             r.hset(R_ARGS_PASS, key, json.dumps(pkt_info))
@@ -51,11 +43,9 @@ def get_pkt_info(pkt):
     mac_dst = pkt[Ether].dst
     ip_src = pkt[IP].src
     ip_dst = pkt[IP].dst
-    # ip_flags = pkt[IP].flags
     ip_len = pkt[IP].len
     tcp_sport = pkt[TCP].sport
     tcp_dport = pkt[TCP].dport
-    # tcp_flags = pkt[TCP].flags
     tcp_ack = pkt[TCP].ack
     tcp_seq = pkt[TCP].seq
     tcp_payload_len = len(pkt[TCP].payload)

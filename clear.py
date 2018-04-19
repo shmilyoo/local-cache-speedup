@@ -10,8 +10,8 @@ def clear():
     r.flushall()
     sql = 'delete from caches;'
     db_execute(sql)
-    os.system('rm {}/* -rf'.format(download_base))
-    os.system('rm /var/log/celery/*')
+    # os.system('rm {}/* -rf'.format(download_base))
+    # os.system('rm /var/log/celery/*')
 
 
 if __name__ == '__main__':

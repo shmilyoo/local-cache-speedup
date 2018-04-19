@@ -1,12 +1,10 @@
 # coding:utf-8
-# from scapy.layers.inet import IP, TCP
-
 from celery_app import app
 import redis
 import json
 from celery_app.helper import db_get_one, get_timestamp_utcnow, db_execute
 from scapy.all import *
-from celery_app.config import R_DOWNLOADING, R_ANALYZING, R_ARGS_PASS, cache_threshold, redirect_src, R_PROCESSING
+from celery_app.config import R_ARGS_PASS, cache_threshold, redirect_src, R_PROCESSING
 
 
 @app.task(ignore_result=True)
@@ -14,14 +12,7 @@ def analyze_url(key):
     r = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
     _pkt_info = r.hget(R_ARGS_PASS, key)
     r.hdel(R_ARGS_PASS, key)
-    # if r.sismember(R_ANALYZING, key) or r.sismember(R_DOWNLOADING, key):
-    #     print('key {} in redis is already in analyze/download process'.format(key))
-    #     return
-    # if r.sismember(R_PROCESSING, key):
-    #     print('key {} in redis is already in processing,skip analyze'.format(key))
-    #     return
     pkt_info = json.loads(_pkt_info)
-    # r.sadd(R_ANALYZING, key)
     try:
         print('analyze process get job,url is {}, key is {}'.format(pkt_info['url'], key))
         # use the hash key of url as the primary index key in db
@@ -36,31 +27,15 @@ def analyze_url(key):
                       'send http 302 to src host {}'.format(pkt_info['url'], pkt_info['ip_src']))
                 send_http_302(redirect, pkt_info)
                 r.srem(R_PROCESSING, key)
-                # if update_lasthit_hitnumber(key):
-                #     print(
-                #         'update hits_number and last_hit after send http 302 for url {}'.format(pkt_info['url']))
-                # else:
-                #     print('some error occured with db when update hits_number and last_hit in send http 302 process')
             else:
                 hit_number = cache[1]
                 if hit_number >= cache_threshold:
-                    print('the hit_number reach the cache_threshold,start downloading,'
+                    print('the hit_number reach the cache_threshold,start downloading {},'
                           'Send the task to download process'.format(pkt_info['url']))
                     r.hset(R_ARGS_PASS, key, _pkt_info)
                     app.send_task('celery_app.download_task.download', (key,))
-                    # r.srem(R_ANALYZING, key)
                 else:
                     r.srem(R_PROCESSING, key)
-                # else:
-                # the record is exist,but file did not downloaded because the cache_threshold has not been reached.
-                # hits_number + 1 only
-                # if update_lasthit_hitnumber(key):
-                #     print(
-                #         'add hits_number({}) by 1 because the cache_threshold has not been reached'.format(
-                #             hit_number))
-                # else:
-                #     print('some error occured in add hits_number,sql is {}'.format(sql))
-            # hits_number + 1
             if not update_lasthit_hitnumber(key):
                 print('some error occured in add hits_number,key is {}'.format(key))
         else:
@@ -81,8 +56,6 @@ def analyze_url(key):
     except Exception as er:
         r.srem(R_PROCESSING, key)
         print('error happend in analyzing {},analyze process now end,exception is {}'.format(pkt_info['url'], er))
-    # finally:
-    #     r.srem(R_PROCESSING, key)
 
 
 def update_lasthit_hitnumber(key):
