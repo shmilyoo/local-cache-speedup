@@ -1,6 +1,7 @@
 # coding:utf-8
 import json
 import redis
+
 try:
     from scapy.layers import http
 except ImportError:
@@ -23,7 +24,11 @@ def prn_callback(r):
         # path like 'http://1.1.1.1/a//b/c/d.mp4 or /a/b/c/d.mp4 or /a//b/c.mp4'
         url = http_layer.fields['Path'].decode('utf-8').replace('//', '/')
         if any([url.endswith(ext) for ext in cap_ext]):
-            print('\n{0[src]} - {1[Method]} - http://{1[Host]}{1[Path]}'.format(ip_layer.fields, http_layer.fields))
+            # print('\n{0[src]} - {1[Method]} - http://{1[Host]}{1[Path]}'.format(ip_layer.fields, http_layer.fields))
+            print('{} - {} - http://{}{}'.format(ip_layer.fields['src'].decode('utf8'),
+                                                 http_layer.fields['Method'].decode('utf8'),
+                                                 http_layer.fields['Host'].decode('utf8'),
+                                                 http_layer.fields['Path'].decode('utf8')))
             key = get_hash(url)
             if r.sismember(R_PROCESSING, key):
                 print('key {}(url {}) is now processing,skip sending it from pcap to analyze'.format(key, url))
