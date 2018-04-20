@@ -6,8 +6,6 @@
 # from kombu import Exchange
 from celery.schedules import crontab
 
-R_ANALYZING = 'ANALYZING'  # list
-R_DOWNLOADING = 'DOWNLOADING'  # list
 R_PROCESSING = 'PROCESSING'  # list
 R_ARGS_PASS = 'ARGS_PASS'  # hash
 
@@ -15,7 +13,6 @@ cap_dst = '192.241.211.12'  # 抓包需要捕获的目的地址
 cap_port = 80
 cap_ext = ['mp4', 'flv']  # 抓包需要捕获的链接地址的后缀
 cap_dev = 'wlp8s0'
-# local_ip = '192.168.43.201'
 
 db_name = 'video_cache'
 db_host = 'localhost'
