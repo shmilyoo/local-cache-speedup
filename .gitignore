@@ -5,3 +5,4 @@ celerybeat-schedule
 __pycache__/
 .idea/
 clear.py
+.vscode/
