@@ -1,5 +1,4 @@
 yaaw/
-pid/
 celerybeat-schedule
 *.py[cod]
 __pycache__/
