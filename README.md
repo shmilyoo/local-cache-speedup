@@ -114,6 +114,24 @@ CELERYD_LOG_FILE="/var/log/celery/%n.log"
 CELERYD_LOG_LEVEL="INFO"
 ```
 
+#### can add systemd config to start celery mission after all workers start
+
+```shell
+[Unit]
+Description=active celery speedup project
+After=celery-cache.service
+
+[Service]
+User=yy
+Group=yy
+WorkingDirectory=YOUR-PROJECT-DIRECTORY
+ExecStart=YOUR-ENV-PYTHON-EXE client.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## flower
 
 start flower service:
