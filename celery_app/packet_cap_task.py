@@ -13,6 +13,7 @@ import os
 from celery_app.helper import get_hash
 
 
+
 def prn_callback(r):
     def parse_packet(packet):
         if not packet.haslayer(http.HTTPRequest):
@@ -22,7 +23,7 @@ def prn_callback(r):
             return
         ip_layer = packet.getlayer(IP)
         # path like 'http://1.1.1.1/a//b/c/d.mp4 or /a/b/c/d.mp4 or /a//b/c.mp4'
-        url = http_layer.fields['Path'].decode('utf-8').replace('//', '/')
+        url = http_layer.fields['Path'].decode('utf-8').replace('//', '/').lower()
         if any([url.endswith(ext) for ext in cap_ext]):
             # print('\n{0[src]} - {1[Method]} - http://{1[Host]}{1[Path]}'.format(ip_layer.fields, http_layer.fields))
             print('{} - {} - http://{}{}'.format(ip_layer.fields['src'].decode('utf8'),
