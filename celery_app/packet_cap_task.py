@@ -23,8 +23,9 @@ def prn_callback(r):
             return
         ip_layer = packet.getlayer(IP)
         # path like 'http://1.1.1.1/a//b/c/d.mp4 or /a/b/c/d.mp4 or /a//b/c.mp4'
-        url = http_layer.fields['Path'].decode('utf-8').replace('//', '/').lower()
-        if any([url.endswith(ext) for ext in cap_ext]):
+        url = http_layer.fields['Path'].decode('utf-8').replace('//', '/')
+        url_low = url.lower()
+        if any([url_low.endswith(ext) for ext in cap_ext]):
             # print('\n{0[src]} - {1[Method]} - http://{1[Host]}{1[Path]}'.format(ip_layer.fields, http_layer.fields))
             print('{} - {} - http://{}{}'.format(ip_layer.fields['src'].decode('utf8'),
                                                  http_layer.fields['Method'].decode('utf8'),
